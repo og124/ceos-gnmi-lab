@@ -1,9 +1,7 @@
 # cEOS gNMI lab
 
 Two Arista cEOS switches under [containerlab](https://containerlab.dev), with
-gNMI on port 6030, ready to poke with [gnmic](https://gnmic.openconfig.net).
-Small on purpose: a working base for streaming-telemetry and model-driven
-config experiments that you can grow node by node.
+gNMI on port 6030 via [gnmic](https://gnmic.openconfig.net).
 
 ```
    leaf1 ─── Ethernet1 ── 10.10.10.0/30 ── Ethernet1 ─── leaf2
@@ -11,17 +9,14 @@ config experiments that you can grow node by node.
 ```
 
 And a write-up of [running it in the cloud privately](docs/cloud/README.md):
-reachable from your laptop over Tailscale, unreachable from the internet, no
-open ports, and cheap when it's idle.
+reachable from your laptop over Tailscale.
 
 ## Quick start
 
 You need an **x86_64** Linux host with Docker, containerlab and gnmic, and
 ~2 GB of RAM per switch.
 
-1. **Get cEOS.** cEOS-lab is free but sits behind an arista.com account, so it
-   isn't in this repo. Download `cEOS-lab-<version>.tar.xz` (the 32-bit build
-   uses less memory), then import it:
+1. **Get cEOS.** Download `cEOS-lab-<version>.tar.xz`, then import it:
 
    ```console
    $ make import IMAGE=cEOS-lab-4.34.8M.tar.xz VERSION=4.34.8M
@@ -48,10 +43,6 @@ You need an **x86_64** Linux host with Docker, containerlab and gnmic, and
    $ gnmic --config gnmic/gnmic.yaml get --path /system/state/hostname
    ```
 
-[`gnmic/examples.sh`](gnmic/examples.sh) is a short tour: capabilities,
-OpenConfig `get`s for hostname, link state and addresses, then a streaming
-subscription to interface counters.
-
 ## Layout
 
 | File | What it is |
@@ -60,20 +51,6 @@ subscription to interface counters.
 | [`configs/<node>.partial.cfg`](configs) | What goes *on* the interfaces: addresses, descriptions, protocols. |
 | [`gnmic/`](gnmic) | gnmic target config and the example tour. |
 | [`docs/cloud/`](docs/cloud) | The private-cloud design, plus generic setup scripts for the subnet router and lab host, and a Tailscale policy. |
-
-## Things that will bite you
-
-- **Configs are `.partial` for a reason.** containerlab's default
-  startup-config for cEOS is what enables gNMI. A plain `startup-config:`
-  *replaces* it — gNMI silently disappears and nothing in the logs says why. A
-  `.partial` is merged onto the default instead. The configs here also repeat
-  the gNMI stanza, so they work either way.
-- **x86_64 only.** cEOS-lab is amd64; ARM hosts (Apple Silicon VMs, Graviton)
-  fail with exec-format errors.
-- **Memory is the ceiling.** Budget ~2 GB per node and ~1 GB for the host. An
-  8 GB box runs three nodes comfortably.
-- **`admin`/`admin`, no TLS.** Lab defaults. Fine on a laptop or a private
-  network, never on anything reachable from the internet.
 
 ## Operating
 
