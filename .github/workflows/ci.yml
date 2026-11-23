@@ -1,0 +1,22 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: shellcheck
+        run: shellcheck docs/cloud/*.sh gnmic/examples.sh
+      - name: YAML parses
+        run: |
+          for f in lab.clab.yml gnmic/gnmic.yaml; do
+            python3 -c "import sys, yaml; yaml.safe_load(open(sys.argv[1]))" "$f" && echo "ok $f"
+          done

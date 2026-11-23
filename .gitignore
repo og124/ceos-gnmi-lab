@@ -1,0 +1,6 @@
+# containerlab's per-lab working directory
+clab-*/
+# cEOS images: licensed, large, and never committed
+*.tar.xz
+*.tar
+.DS_Store

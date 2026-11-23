@@ -1,0 +1,16 @@
+# gnmic config for the lab: `gnmic --config gnmic/gnmic.yaml <command>` talks
+# to both switches at once.
+#
+# admin/admin and insecure (no TLS) are lab defaults. They are fine on a laptop
+# or a private network, and wrong anywhere reachable from the internet.
+username: admin
+password: admin
+insecure: true
+encoding: json_ietf
+timeout: 10s
+
+targets:
+  172.20.20.11:6030:
+    name: leaf1
+  172.20.20.12:6030:
+    name: leaf2

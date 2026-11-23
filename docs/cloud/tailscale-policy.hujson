@@ -1,0 +1,26 @@
+// Tailscale policy for the lab: paste into login.tailscale.com -> Access
+// Controls BEFORE the router and lab host first register. Auto-approvers
+// don't retroactively approve routes advertised while the policy was absent.
+{
+  // Tagged devices are owned by the tailnet and have key expiry disabled by
+  // default. An untagged server silently drops off the tailnet when its node
+  // key expires (180 days), which is miserable to debug months later.
+  "tagOwners": {
+    "tag:lab-infra": ["autogroup:admin"],
+  },
+
+  // Without this, every advertised subnet needs a manual approval click,
+  // including after each instance rebuild, where the symptom is a node that
+  // looks healthy while nothing behind it is reachable.
+  "autoApprovers": {
+    "routes": {
+      "10.0.0.0/16":    ["tag:lab-infra"], // the VPC, via the subnet router
+      "172.20.20.0/24": ["tag:lab-infra"], // containerlab mgmt, via the lab host
+    },
+  },
+
+  // Who can reach what. Here: tailnet members reach the lab, nothing else.
+  "grants": [
+    { "src": ["autogroup:member"], "dst": ["10.0.0.0/16", "172.20.20.0/24"], "ip": ["*"] },
+  ],
+}

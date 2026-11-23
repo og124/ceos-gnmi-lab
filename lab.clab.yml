@@ -1,0 +1,42 @@
+# Two Arista cEOS switches with gNMI on 6030, under containerlab.
+#
+#   make deploy
+#   gnmic -a 172.20.20.11:6030 --insecure -u admin -p admin capabilities
+#
+# Sizing: budget ~2 GB of RAM per cEOS node, plus ~1 GB for the host OS and
+# Docker. An 8 GB host runs 3 nodes comfortably; 4 is tight. The 32-bit cEOS
+# build uses ~30% less memory per node than cEOS64, which is what makes that
+# node count work. Arista recommend 64-bit for production parity; for a lab,
+# the trade is worth it.
+#
+# Adding a node: an entry under `nodes:`, its links, and a
+# configs/<node>.partial.cfg. Give each a fixed mgmt-ipv4 so gNMI targets stay
+# stable across rebuilds.
+
+name: gnmi
+
+mgmt:
+  network: gnmi-lab
+  ipv4-subnet: 172.20.20.0/24
+
+topology:
+  kinds:
+    arista_ceos:
+      # Whatever tag you imported the image as (see `make import`).
+      image: ceos:4.34.8M
+
+  nodes:
+    leaf1:
+      kind: arista_ceos
+      mgmt-ipv4: 172.20.20.11
+      startup-config: configs/leaf1.partial.cfg
+    leaf2:
+      kind: arista_ceos
+      mgmt-ipv4: 172.20.20.12
+      startup-config: configs/leaf2.partial.cfg
+
+  # Cabling only. `eth1` here is `Ethernet1` in EOS. `eth0` is reserved for
+  # management (the mgmt-ipv4 above) and must never appear in this list.
+  # What goes ON the interfaces is EOS config, in configs/<node>.partial.cfg.
+  links:
+    - endpoints: ["leaf1:eth1", "leaf2:eth1"]
